@@ -151,6 +151,7 @@ void main_task(intptr_t unused)
 
         if (ev3_touch_sensor_is_pressed(touch_sensor) == 1)
         {
+	  _log("pressed");
             break; /* タッチセンサが押された */
         }
 
@@ -176,14 +177,14 @@ void main_task(intptr_t unused)
         }
         else
         {
-            forward = 30; /* 前進命令 */
+            forward = 80; /* 前進命令 */
             if (ev3_color_sensor_get_reflect(color_sensor) >= (LIGHT_WHITE + LIGHT_BLACK)/2)
             {
-                turn = -80 * _EDGE; /* 右旋回命令　(右コースは逆) */
+                turn = -40 * _EDGE; /* 右旋回命令　(右コースは逆) */
             }
             else
             {
-                turn =  80 * _EDGE; /* 左旋回命令　(右コースは逆) */
+                turn =  40 * _EDGE; /* 左旋回命令　(右コースは逆) */
             }
         }
 
