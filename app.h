@@ -77,6 +77,20 @@ extern "C" {
 #endif /* STACK_SIZE */
 
 /*
+ * ログ出力用の定義
+ */
+#define LOGGING_PERIOD (1000/4)
+
+struct DataLogger {
+    const char *varname;
+    int32_t offset;
+    int32_t latest;
+    char hist_str[2][LOGGING_PERIOD+1];
+    int index;
+    int count;
+};
+
+/*
  *  関数のプロトタイプ宣言
  */
 #ifndef TOPPERS_MACRO_ONLY

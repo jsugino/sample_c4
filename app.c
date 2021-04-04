@@ -94,12 +94,22 @@ static void _log(char* text);
 //static void tail_control(signed int angle);
 //static void backlash_cancel(signed char lpwm, signed char rpwm, int32_t *lenc, int32_t *renc);
 
+/* ログ出力用の関数プロトタイプ宣言とデータ領域 */
+static void init_logging( struct DataLogger *logger, const char *varnm, int32_t offs );
+static void logging( struct DataLogger *logger, int32_t value );
+static struct DataLogger angLLogger;
+static struct DataLogger angRLogger;
+
 /* メインタスク */
 void main_task(intptr_t unused)
 {
     signed char forward;      /* 前後進命令 */
     signed char turn;         /* 旋回命令 */
     //signed char pwm_L, pwm_R; /* 左右モーターPWM出力 */
+
+    /* ログ出力データ領域の初期化 */
+    init_logging(&angLLogger,"angL",10);
+    init_logging(&angRLogger,"angR",10);
 
     /* LCD画面表示 */
     ev3_lcd_fill_rect(0, 0, EV3_LCD_WIDTH, EV3_LCD_HEIGHT, EV3_LCD_WHITE);
@@ -171,20 +181,26 @@ void main_task(intptr_t unused)
     {
         if (ev3_button_is_pressed(BACK_BUTTON)) break;
 
+	int32_t angl = ev3_motor_get_counts(left_motor);
+	int32_t angr = ev3_motor_get_counts(right_motor);
+	//syslog(LOG_NOTICE, "angl = %d, angr = %d",angl,angr);
+	logging(&angLLogger,angl);
+	logging(&angRLogger,angr);
+
         if (sonar_alert() == 1) /* 障害物検知 */
         {
             forward = turn = 0; /* 障害物を検知したら停止 */
         }
         else
         {
-            forward = 80; /* 前進命令 */
+            forward = 30; /* 前進命令 */
             if (ev3_color_sensor_get_reflect(color_sensor) >= (LIGHT_WHITE + LIGHT_BLACK)/2)
             {
-                turn = -40 * _EDGE; /* 右旋回命令　(右コースは逆) */
+                turn = -80 * _EDGE; /* 右旋回命令　(右コースは逆) */
             }
             else
             {
-                turn =  40 * _EDGE; /* 左旋回命令　(右コースは逆) */
+                turn =  80 * _EDGE; /* 左旋回命令　(右コースは逆) */
             }
         }
 
@@ -301,4 +317,29 @@ static void _syslog(int level, char* text){
 //*****************************************************************************
 static void _log(char *text){
     _syslog(LOG_NOTICE, text);
+}
+
+static void init_logging( struct DataLogger *logger, const char *varnm, int32_t offs )
+{
+    logger->varname = varnm;
+    logger->offset = offs;
+    logger->latest = 0;
+    logger->index = 0;
+    logger->count = 0;
+}
+
+static void logging( struct DataLogger *logger, int32_t value )
+{
+    int32_t diff = value - logger->latest;
+    diff += (0x22 + logger->offset);
+    logger->hist_str[logger->index][logger->count] = ( diff < 0x21 ) ? 0x21 : ( diff > 0x7e ) ? 0x7e : diff;
+    logger->latest = value;
+    ++logger->count;
+    if ( logger->count >= LOGGING_PERIOD ) {
+	char *ptr = logger->hist_str[logger->index];
+	logger->count = 0;
+	logger->index = 1-logger->index;
+	_debug(syslog(LOG_NOTICE, "%08u, DataLogger:%s = %d %s",
+		      0/*clock->now()*/, logger->varname, value, ptr));
+    }
 }
