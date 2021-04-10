@@ -100,6 +100,10 @@ static void logging( struct DataLogger *logger, int32_t value );
 static struct DataLogger angLLogger;
 static struct DataLogger angRLogger;
 
+static struct DataLogger colRLogger;
+static struct DataLogger colGLogger;
+static struct DataLogger colBLogger;
+
 /* メインタスク */
 void main_task(intptr_t unused)
 {
@@ -110,6 +114,10 @@ void main_task(intptr_t unused)
     /* ログ出力データ領域の初期化 */
     init_logging(&angLLogger,"angL",10);
     init_logging(&angRLogger,"angR",10);
+
+    init_logging(&colRLogger,"colR",10);
+    init_logging(&colGLogger,"colG",10);
+    init_logging(&colBLogger,"colB",10);
 
     /* LCD画面表示 */
     ev3_lcd_fill_rect(0, 0, EV3_LCD_WIDTH, EV3_LCD_HEIGHT, EV3_LCD_WHITE);
@@ -186,6 +194,12 @@ void main_task(intptr_t unused)
 	//syslog(LOG_NOTICE, "angl = %d, angr = %d",angl,angr);
 	logging(&angLLogger,angl);
 	logging(&angRLogger,angr);
+
+	rgb_raw_t color_val;
+	ev3_color_sensor_get_rgb_raw(color_sensor,&color_val);
+	logging(&colRLogger,color_val.r);
+	logging(&colGLogger,color_val.g);
+	logging(&colBLogger,color_val.b);
 
         if (sonar_alert() == 1) /* 障害物検知 */
         {
