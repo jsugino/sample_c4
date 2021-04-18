@@ -200,6 +200,8 @@ void main_task(intptr_t unused)
 	logging(&colRLogger,color_val.r);
 	logging(&colGLogger,color_val.g);
 	logging(&colBLogger,color_val.b);
+        //int32_t rgb = (int32_t)color_val.r + (int32_t)color_val.g + (int32_t)color_val.b;
+        int32_t rgb = (int32_t)color_val.r;
 
         if (sonar_alert() == 1) /* 障害物検知 */
         {
@@ -207,15 +209,8 @@ void main_task(intptr_t unused)
         }
         else
         {
-            forward = 30; /* 前進命令 */
-            if (ev3_color_sensor_get_reflect(color_sensor) >= (LIGHT_WHITE + LIGHT_BLACK)/2)
-            {
-                turn = -80 * _EDGE; /* 右旋回命令　(右コースは逆) */
-            }
-            else
-            {
-                turn =  80 * _EDGE; /* 左旋回命令　(右コースは逆) */
-            }
+            forward = 60; /* 前進命令 */
+            turn = (rgb - 40) * -1;
         }
 
         /* 左右モータでロボットのステアリング操作を行う */
