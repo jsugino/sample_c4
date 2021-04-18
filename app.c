@@ -115,9 +115,9 @@ void main_task(intptr_t unused)
     init_logging(&angLLogger,"angL",10);
     init_logging(&angRLogger,"angR",10);
 
-    init_logging(&colRLogger,"colR",10);
-    init_logging(&colGLogger,"colG",10);
-    init_logging(&colBLogger,"colB",10);
+    init_logging(&colRLogger,"colR",46);
+    init_logging(&colGLogger,"colG",46);
+    init_logging(&colBLogger,"colB",46);
 
     /* LCD画面表示 */
     ev3_lcd_fill_rect(0, 0, EV3_LCD_WIDTH, EV3_LCD_HEIGHT, EV3_LCD_WHITE);
